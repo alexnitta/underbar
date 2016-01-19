@@ -50,6 +50,15 @@
   // Note: _.each does not have a return value, but rather simply runs the
   // iterator function over each item in the input collection.
   _.each = function(collection, iterator) {
+    if (Array.isArray(collection)) { // check if collection is an array
+      for (var i = 0; i < collection.length; i++) { // if collection is an array, loop over it and call the iterator on three arguments: current element, index, and whole collection
+        iterator(collection[i], i, collection);
+      }
+    } else { // if collection is not an array, assume it is an object
+      for (var key in collection) { // loop over the properties of the object and call the iterator on three arguments: current value, key, and whole collection
+        iterator(collection[key],key,collection)
+      }
+    }
   };
 
   // Returns the index at which value can be found in the array, or -1 if value
@@ -58,10 +67,10 @@
     // TIP: Here's an example of a function that needs to iterate, which we've
     // implemented for you. Instead of using a standard `for` loop, though,
     // it uses the iteration helper `each`, which you will need to write.
-    var result = -1;
+    var result = -1; // set the default value of result to -1
 
     _.each(array, function(item, index) {
-      if (item === target && result === -1) {
+      if (item === target && result === -1) { // if item equals target and result has not been changed, set result to index 
         result = index;
       }
     });
@@ -71,12 +80,22 @@
 
   // Return all elements of an array that pass a truth test.
   _.filter = function(collection, test) {
+    var results = []; // set results to empty array
+    _.each(collection,function(item) { // use the _.each method we just implemented
+      if (test(item)) { // for each item that evaluates to true
+        results.push(item); // add that item to the results
+      }
+    })
+    return results;   
   };
 
   // Return all elements of an array that don't pass a truth test.
   _.reject = function(collection, test) {
     // TIP: see if you can re-use _.filter() here, without simply
     // copying code in and modifying it
+    return _.filter(collection,function(item) {
+      return test(item) ? false : true; // flip the test results - if the item evaluates to true, return false, and vice versa
+    });
   };
 
   // Produce a duplicate-free version of the array.

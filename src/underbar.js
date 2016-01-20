@@ -68,13 +68,11 @@
     // implemented for you. Instead of using a standard `for` loop, though,
     // it uses the iteration helper `each`, which you will need to write.
     var result = -1; // set the default value of result to -1
-
     _.each(array, function(item, index) {
       if (item === target && result === -1) { // if item equals target and result has not been changed, set result to index 
         result = index;
       }
-    });
-
+    })
     return result;
   };
 
@@ -95,11 +93,20 @@
     // copying code in and modifying it
     return _.filter(collection,function(item) {
       return test(item) ? false : true; // flip the test results - if the item evaluates to true, return false, and vice versa
-    });
+    })
   };
 
   // Produce a duplicate-free version of the array.
   _.uniq = function(array) {
+    var results = []; // set results to empty array
+    var exists; // declare var to track if each item exists in results
+    _.each(array,function(item){
+      exists = _.indexOf(results,item); // set exists to the indexOf each item
+      if (exists === -1) { // exists equals the index number of the item in results, if it exists in results; otherwise it equals -1
+        results.push(item);  // if item does not exist in results, push it to results
+      }
+    })
+    return results;
   };
 
 
@@ -108,6 +115,11 @@
     // map() is a useful primitive iteration function that works a lot
     // like each(), but in addition to running the operation on all
     // the members, it also maintains an array of results.
+    var results = []; // set results to empty array
+    _.each(collection, function(item){
+      results.push(iterator(item)); // run the iterator function on each item and push the result to the results array
+    })
+    return results;
   };
 
   /*
@@ -149,6 +161,23 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
+    var collectionArray = []; // set up empty array to be reduced
+    if (Array.isArray(collection)) {
+      collectionArray = collection; // if collection is an array, use it as is
+    } else {
+      _.each(collection,function(item,index) { // if collection is an object, turn it into an array
+      collectionArray[index] = item;  
+      });
+    }  
+    var i = 0;
+    if (accumulator === undefined) { 
+      i = 1; // if accumulator is undefined, set counter to 1
+      accumulator = collectionArray[0]; // and set accumulator to first element
+    }
+    for (i; i < collectionArray.length; i++) {
+      accumulator = iterator(accumulator,collectionArray[i]); // for each item in array, set the accumulator equal to the iterator called on the accumulator and the current element
+    }
+  return accumulator;
   };
 
   // Determine if the array or object contains a given value (using `===`).

@@ -165,9 +165,9 @@
     if (Array.isArray(collection)) {
       collectionArray = collection; // if collection is an array, use it as is
     } else {
-      _.each(collection,function(item,index) { // if collection is an object, turn it into an array
-      collectionArray[index] = item;  
-      });
+      for (var key in collection) { // otherwise, assume it is an object
+        collectionArray.push(collection[key]); // and push each value into collectionArray
+      }
     }  
     var i = 0;
     if (accumulator === undefined) { 

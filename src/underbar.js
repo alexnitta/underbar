@@ -208,9 +208,33 @@
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
+  
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    // I didn't use the very clever way, but this solution works.
     
+    if(_.reduce(collection,function(accumulator,item) { // if all items are undefined, it is an empty collection
+      if(item!== undefined) { // 2. if any item has a value
+        return false; // 3. the collection is not empty
+      }
+    },true)) { // 1. assume the collection is empty
+      return false; // 4. if it is an empty collection, return false
+    }
+    
+    if (iterator === undefined) { // if iterator is not defined, assume values are already boolean
+      iterator = function(item){return item}; // and return values themselves
+    }
+    
+    if (_.reduce(collection,function(accumulator,item) { // if any one element passes the test, return true
+      if (iterator(item)) {
+        accumulator = true;
+      }
+      return accumulator;
+    },false)) { 
+      return true;
+    } else {
+      return false; // otherwise, return false
+    } 
   };
 
 

@@ -268,49 +268,27 @@
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
-  _.defaults = function(obj) {
-    // METHOD ONE
-    var result = obj; // set result to obj argument
+  _.defaults = function(obj){
     var objKeys = []; // create an empty array to hold the keys of the obj argument
     _.each(obj,function(item,index,collection){
       objKeys.push(index); // push the keys of obj argument to objKeys
     }); 
-    for (var i = 1; i < arguments.length; i++) { 
-      _.each(arguments[i], function(item,index,collection) { // loop through each argument
-        if (!_.reduce(objKeys,function(accumulator,item){
-          return index === item;
+    var args = Array.prototype.slice.call(arguments); // make arguments into a real array
+    for (var i = 1; i < args.length; i++) {  // starting with the second argument,
+      _.each(args[i], function(item,index,collection) {  // loop through each argument
+        if (!_.reduce(objKeys,function(accumulator,item) {
+          if (index === item) { // if the object key is not found in the argument's keys
+            accumulator = true; // this reduce will evaluate to false
+          } 
+          return accumulator;
           },false)) {
-          result[index] = item; // and add its properties to the result
+          if (!obj.hasOwnProperty(index)) { // if the reduce evaluates to false and if result does not already have the property
+            obj[index] = item; // add it to result
+          } 
         }
       });
     }
-    return result;
-
-// var destination = { a: 1, b: 2 };
-//         var source = { a: 100, b: 200, c: 300 };
-
-//         _.defaults(destination, source);
-
-//         expect(destination.a).to.equal(1);
-//         expect(destination.b).to.equal(2);
-//         expect(destination.c).to.equal(300);
-//       });
-
-
-
-    // METHOD TWO
-    // var result = obj; // set result to obj argument
-    // var args = Array.prototype.slice.call(arguments); // make arguments into a real array    
-    // for (var i = 1; i < args.length; i++) {
-    //   for (var argsKey in args[i]) {
-    //     for (var objKey in obj) {
-    //       if (argsKey !== objKey) {
-    //         result[argsKey] = args[i][argsKey];
-    //       }
-    //     }
-    //   }
-    // }
-    // return result;
+    return obj;
   };   
   
 

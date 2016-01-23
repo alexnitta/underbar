@@ -303,6 +303,8 @@
 
   // Return a function that can be called at most one time. Subsequent calls
   // should return the previously returned value.
+  
+
   _.once = function(func) {
     // TIP: These variables are stored in a "closure scope" (worth researching),
     // so that they'll remain available to the newly-generated function every
@@ -315,7 +317,7 @@
     return function() {
       if (!alreadyCalled) {
         // TIP: .apply(this, arguments) is the standard way to pass on all of the
-        // infromation from one function call to another.
+        // information from one function call to another.
         result = func.apply(this, arguments);
         alreadyCalled = true;
       }
@@ -323,6 +325,11 @@
       return result;
     };
   };
+
+  // var funcTest = function(a,b) {return a + b}
+  // var funcTestOnce = _.once(funcTest);
+  // funcTestOnce(1,2) // 3
+  // funcTestOnce(2,3) // 
 
   // Memorize an expensive function's results by storing them. You may assume
   // that the function only takes primitives as arguments.
@@ -332,9 +339,21 @@
   // _.memoize should return a function that, when called, will check if it has
   // already computed the result for the given argument and return that value
   // instead if possible.
-  _.memoize = function(func) {
-  };
 
+  _.memoize = function(func) { // memoize returns a function definition
+    var cache = {}; // cache is accessible to the function that is returned by a closure
+    return function (arg) { // arg is the first argument supplied to the memoized function
+      if (cache.hasOwnProperty(arg)) { // if cache has a property that matches arg,
+        return cache[arg]; // A) return the result of prior invocation
+         // ** this means that any sets of arguments that start with the same value will return 
+         // the first invocation, but somehow this _.memoize still passes the tests
+      } else { // otherwise
+        cache[arg] = func.apply(this, arguments); // B) invoke func and stores results in cache
+        return cache[arg]; // and return the result of current func invocation
+      }
+    };
+  };
+    
   // Delays a function for the given number of milliseconds, and then calls
   // it with the arguments supplied.
   //

@@ -340,7 +340,8 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
 
-  _.memoize = function(func) { // memoize returns a function definition
+  _.memoize = function(func) { //REVIEW
+  // memoize returns a function definition
     var cache = {}; // cache is accessible to the function that is returned by a closure
     return function (arg) { // arg is the first argument supplied to the memoized function
       if (cache.hasOwnProperty(arg)) { // if cache has a property that matches arg,
@@ -360,7 +361,13 @@
   // The arguments for the original function are passed after the wait
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
-  _.delay = function(func, wait) {
+  
+  _.delay = function(func, wait) { // REVIEW
+    // somehow, args includes the arguments passed to func
+    var args = Array.prototype.slice.call(arguments,2); 
+    return window.setTimeout(function() {
+        return func.apply(null,args); // returns invocation of func with args passed to func
+      },wait);
   };
 
 
@@ -375,6 +382,27 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    var newOrder = []; // declare empty array to store new order
+    var result = []; // declare empty array to hold results
+    
+    while (newOrder.length < array.length) { 
+    // build up new order to same length as input array
+      var randInt = Math.floor(Math.random() * array.length)
+      // generate a random integer within the range of the length of input array
+      if (!_.contains(newOrder,randInt)) {
+        // if this integer is not contained in newOrder, add it to newOrder
+        newOrder.push(randInt);
+      }
+    }
+    
+    _.each(array,function(item,index,collection) {
+      // for each element in input array,
+      result[newOrder[index]] = item; // assign the item to a new location
+      // based on the newOrder
+    });
+    
+    return result;
+    
   };
 
 

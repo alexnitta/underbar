@@ -122,12 +122,6 @@
     return results;
   };
 
-  /*
-   * TIP: map is really handy when you want to transform an array of
-   * values into a new array of values. _.pluck() is solved for you
-   * as an example of this.
-   */
-
   // Takes an array of objects and returns and array of the values of
   // a certain property in it. E.g. take an array of people and return
   // an array of just their ages
@@ -362,8 +356,7 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   
-  _.delay = function(func, wait) { // REVIEW
-    // somehow, args includes the arguments passed to func
+  _.delay = function(func, wait) {
     var args = Array.prototype.slice.call(arguments,2); 
     return window.setTimeout(function() {
         return func.apply(null,args); // returns invocation of func with args passed to func
@@ -387,7 +380,7 @@
     
     while (newOrder.length < array.length) { 
     // build up new order to same length as input array
-      var randInt = Math.floor(Math.random() * array.length)
+      var randInt = Math.floor(Math.random() * array.length);
       // generate a random integer within the range of the length of input array
       if (!_.contains(newOrder,randInt)) {
         // if this integer is not contained in newOrder, add it to newOrder
@@ -417,21 +410,78 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
+    if (functionOrKey === undefined) { // if functionOrKey is undefined;
+      return null; // there is no way to evaluate results, so return null
+    } else if (typeof(functionOrKey) === 'function') { // if functionOrKey is a function,
+      return _.map(collection,function(item) { // return an array with results of 
+        return functionOrKey.apply(item,args); // invoking the function on every item, passing in args
+      });
+    } else { // otherwise, assume functionOrKey is a method
+      return _.map(collection,function(item) { // return an array with results of
+        return item[functionOrKey].apply(item,args); // invoking the method on every item, passing in args
+      });
+    }  
   };
 
   // Sort the object's values by a criterion produced by an iterator.
   // If iterator is a string, sort objects by that property with the name
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
-  _.sortBy = function(collection, iterator) {
-  };
+  
+  // this was helpful: http://www.sitepoint.com/sophisticated-sorting-in-javascript/  
+
+  _.sortBy = function(collection, iterator) {    
+    if (typeof(iterator) === 'string') { // if iterator is a string,
+      return collection.sort(function(a,b) { // treat it as a property name
+        return a[iterator] - b[iterator]; // and sort by property lookup
+        // if this returns greater than zero,
+        // b comes before a; if it returns less than zero, a comes before b;
+        // if it returns 0, a and b are unchanged with respect to each other
+      });
+    } else { // otherwise, assume iterator is a function
+      return collection.sort(function(a,b) {
+        return iterator(a) - iterator(b); // and sort by function invocation
+      });
+    }
+  }; 
+  
 
   // Zip together two or more arrays with elements of the same index
   // going together.
   //
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
+  
   _.zip = function() {
+    var args = (arguments.length === 1?[arguments[0]]:Array.apply(null, arguments)); // make args into a real array
+    var results = []; // declare empty array to hold results
+    
+    var maxLength = _.reduce(args,function(accumulator,item) { // find the max length of all args
+      if(item.length > accumulator) {
+        accumulator = item.length;
+      }
+      return accumulator;
+    },0);
+    
+    for (var i = 0; i < args.length; i++) { // for each argument,
+      _.each(args[i],function(item,index,collection) { // analyze each element in current argument, 
+        if (results[index] === undefined) { // create an array in results if needed
+          results[index] = [];
+        }
+        results[index].push(item); // push element into results
+      });    
+    }
+    
+    for (var i = 0; i < results.length; i++) { // for each element in results,
+      var lengthDifference = maxLength - results[i].length; // find difference between maxLength and current element
+      if (lengthDifference > 0) { // if the differences is greater than zero,
+        for (var j = 0; j < lengthDifference; j++) { // fill in each missing element with value undefined
+          results[i].push(undefined);
+        }
+      }  
+    }
+    
+    return results; // return results array
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
@@ -439,16 +489,55 @@
   //
   // Hint: Use Array.isArray to check if something is an array
   _.flatten = function(nestedArray, result) {
+    result = result || []; // set up empty array as default value for result
+    for (var i = 0; i < nestedArray.length; i++) { // loop through all elements of the array
+      if (Array.isArray(nestedArray[i])) { // if the current element is an array,
+        _.flatten(nestedArray[i],result); // recurse on current element
+      } else {
+        result.push(nestedArray[i]); // otherwise, push current element to result
+      }    
+    }
+    return result;
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
-  _.intersection = function() {
+  _.intersection = function(){
+    var result = []; // set up empty array as default value for result
+    for (var i = 0; i < arguments[0].length; i++) { // for each item in first argument,
+      if (!_.contains(result,arguments[0][i])) { // if result does not contain the item
+        for (var j = 0; j < arguments.length; j++) { // loop through all arrays
+          if (!_.contains(arguments[j], arguments[0][i])) { // if the current array does not contain 
+            // the item from the first argument,
+            break; // break out of the current for loop
+          }
+        }
+        if (j === arguments.length) { // if j reached arguments.length, the current array does contain the item from first argument
+          result.push(arguments[0][i]); // so push it to results
+        }  
+      }
+    }
+    return result;
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = function(array) {
+    var result = []; // set up empty array as default value for result
+    for (var i = 0; i < array.length; i++) { // for each item in first array,
+      if (!_.contains(result,array[i])) { // if result does not contain the item
+        for (var j = 1; j < arguments.length; j++) { // loop through all arrays except the first
+          if (_.contains(arguments[j], array[i])) { // if the current array contains
+            // the item from the first arrray,
+            break; // break out of the current for loop
+          }
+        }
+        if (j === arguments.length) { // if j equals arguments.length, the current array does not contain the item from first array
+          result.push(array[i]); // so push it to results
+        }  
+      }
+    }
+    return result;
   };
 
   // Returns a function, that, when invoked, will only be triggered at most once
